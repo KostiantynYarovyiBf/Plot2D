@@ -1,17 +1,17 @@
-Requirements:
+# Requirements:
     - C++ 17+
     - SFML
     - CMAKE
 
-Install SFML: 
+# Install SFML: 
     Windows (Into Shell):
-        > git clone https://github.com/Microsoft/vcpkg.git> .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
-        > .\vcpkg\vcpkg integrate install
-        > .\vcpkg\vcpkg install sfml:x64-windows
+        - git clone https://github.com/Microsoft/vcpkg.git> .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+        - .\vcpkg\vcpkg integrate install
+        - .\vcpkg\vcpkg install sfml:x64-windows
     Linux (Debian):
         sudo apt install libsfml-dev
 
-Run:
+# Run:
     Windows:
         mkdir build
         cd build
