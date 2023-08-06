@@ -1,21 +1,21 @@
 #include "draw.h"
 
-float percentage(float value, float min, float max) {
+float Draw::percentage(float value, float min, float max) {
   return ((value - min) / (max - min)) * 100;
 }
 
-float getpercentage(float per, float min, float max) {
+float Draw::getpercentage(float per, float min, float max) {
   return (min + (per / 100) * (max - min));
 }
 
-float getValue(float per, float min, float max) {
+float Draw::getValue(float per, float min, float max) {
   return (min + (per / 100) * (max - min));
 }
 
-float getCoord(float size, float per) { return ((size * per) / 100); }
+float Draw::getCoord(float size, float per) { return ((size * per) / 100); }
 
-void drawLine(sf::RenderWindow &window, sf::Color color,
-              std::pair<sf::Vector2f, sf::Vector2f> &&pos) {
+void Draw::drawLine(sf::RenderWindow &window, sf::Color color,
+                    std::pair<sf::Vector2f, sf::Vector2f> &&pos) {
   sf::Vertex line[2];
   line[0].color = color;
   line[1].color = color;
@@ -24,8 +24,8 @@ void drawLine(sf::RenderWindow &window, sf::Color color,
   window.draw(line, 2, sf::Lines);
 }
 
-void drawText(sf::RenderWindow &window, const sf::Font &font, std::string &&str,
-              sf::Vector2f &&p, float rotate) {
+void Draw::drawText(sf::RenderWindow &window, const sf::Font &font,
+                    std::string &&str, sf::Vector2f &&p, float rotate) {
   sf::Text text;
   text.setFont(font);
   text.setCharacterSize(12);
@@ -36,10 +36,30 @@ void drawText(sf::RenderWindow &window, const sf::Font &font, std::string &&str,
   window.draw(text);
 }
 
-void draw(sf::RenderWindow &window,
-          const std::vector<std::pair<float, float>> &filtered_data,
-          const std::string &fontpath, float minX, float maxX, float minY,
-          float maxY) {
+int Draw::calculateDegee(float value) {
+  int degree = 1;
+
+  while (static_cast<int>(value) <= 0) {
+    value = value * 10;
+    if (static_cast<int>(value) > 0) {
+      return degree;
+    }
+    degree++;
+  }
+
+  return degree;
+}
+std::string Draw::parseValueToString(float value) {
+  int degree = calculateDegee(value);
+  double scale = pow(10, degree);
+  return std::move(std::to_string(value * scale) + "*10^(-" +
+                   std::to_string(degree) + ")");
+}
+
+void Draw::draw(sf::RenderWindow &window,
+                const std::vector<std::pair<float, float>> &filtered_data,
+                const std::string &fontpath, float minX, float maxX, float minY,
+                float maxY) {
 
   std::vector<sf::Vector2f> mappedPosize_ts;
   window.clear(sf::Color::White);
@@ -113,25 +133,20 @@ void draw(sf::RenderWindow &window,
   if (font.loadFromFile(fontpath)) {
     const float rotate0 = 0.0f;
     const float rotate90 = 90.0f;
-    const double scale = pow(10, 8);
-    const int degree = 8;
+
     drawText(window, font, "Meter",
              sf::Vector2f((winX) - (shiftX), (winY - (0.1f * winY))), rotate0);
     drawText(window, font, "Newton",
              sf::Vector2f(sf::Vector2f((shiftX - 20), (20))), rotate90);
 
     for (int i = 25; i < 100; i += 25) {
-      std::string X =
-          std::to_string(getValue(static_cast<float>(i), minX, maxX) * scale) +
-          "*10^(-" + std::to_string(degree) + ")";
-      std::string Y =
-          std::to_string(getValue(static_cast<float>(i), minY, maxY) * scale) +
-          "*10^(-" + std::to_string(degree) + ")";
-      drawText(window, font, move(X),
+      drawText(window, font,
+               parseValueToString(getValue(static_cast<float>(i), minX, maxX)),
                sf::Vector2f(shiftX + getCoord(winX, static_cast<float>(i)),
                             markY1 + 20),
                rotate0);
-      drawText(window, font, move(Y),
+      drawText(window, font,
+               parseValueToString(getValue(static_cast<float>(i), minY, maxY)),
                sf::Vector2f(markX1 - 10,
                             shiftY - getCoord(winY, static_cast<float>(i))),
                rotate90);

@@ -8,11 +8,11 @@
 
 const size_t winX = 1000;
 const size_t winY = 500;
-struct WinSize;
-
+const std::string name = "Two-dimensional graph plot";
 enum class SupportFir {
   SMA,
 };
+struct WinSize;
 
 class Plot {
 private:
@@ -56,6 +56,7 @@ public:
   auto &getFillterData() { return this->filtered_data; }
   auto &getData() { return this->curve; }
   auto &getWinSize() { return this->_winSize; }
+
   void parseFile() {
     std::fstream force_curve;
     force_curve.open(path);
@@ -91,20 +92,30 @@ public:
     this->fir.get()->filterFIR(this->curve, this->filtered_data, _winSize,
                                this->chunk);
   }
+
+  void draw(sf::RenderWindow &window) {
+
+    try {
+      Draw draw;
+      draw.draw(window, this->filtered_data, this->fontpath, _winSize.minX,
+                _winSize.maxX, _winSize.minY, _winSize.maxY);
+    } catch (const std::exception &ex) {
+      std::cout << "ERROR: Plot Draw " << ex.what() << std::endl;
+      window.close();
+    }
+  }
 };
 
 int main(int argc, char *argv[]) {
 
-  sf::RenderWindow window(sf::VideoMode(winX, winY),
-                          "Two-dimensional graph plot",
+  sf::RenderWindow window(sf::VideoMode(winX, winY), std::move(name),
                           sf::Style::Titlebar | sf::Style::Close);
+
   Plot plot(argc, argv);
   plot.parseFile();
   plot.fillterData(SupportFir::SMA);
-  auto &_winSize = plot.getWinSize();
-
-  draw(window, plot.getFillterData(), plot.getFont(), _winSize.minX,
-       _winSize.maxX, _winSize.minY, _winSize.maxY);
+  // auto &_winSize = plot.getWinSize();
+  plot.draw(window);
 
   while (window.isOpen()) {
     sf::Event event;
