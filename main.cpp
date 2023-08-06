@@ -3,12 +3,9 @@
 #include <string>
 #include <vector>
 
-#include "draw.h"
 #include "fir.h"
+#include "window.h"
 
-const size_t winX = 1000;
-const size_t winY = 500;
-const std::string name = "Two-dimensional graph plot";
 enum class SupportFir {
   SMA,
 };
@@ -93,38 +90,19 @@ public:
                                this->chunk);
   }
 
-  void draw(sf::RenderWindow &window) {
-
-    try {
-      Draw draw;
-      draw.draw(window, this->filtered_data, this->fontpath, _winSize.minX,
+  void draw() {
+    Window win;
+    win.display(this->filtered_data, this->fontpath, _winSize.minX,
                 _winSize.maxX, _winSize.minY, _winSize.maxY);
-    } catch (const std::exception &ex) {
-      std::cout << "ERROR: Plot Draw " << ex.what() << std::endl;
-      window.close();
-    }
   }
 };
 
 int main(int argc, char *argv[]) {
 
-  sf::RenderWindow window(sf::VideoMode(winX, winY), std::move(name),
-                          sf::Style::Titlebar | sf::Style::Close);
-
   Plot plot(argc, argv);
   plot.parseFile();
   plot.fillterData(SupportFir::SMA);
-  // auto &_winSize = plot.getWinSize();
-  plot.draw(window);
-
-  while (window.isOpen()) {
-    sf::Event event;
-    while (window.pollEvent(event)) {
-      if (event.type == sf::Event::Closed) {
-        window.close();
-      }
-    }
-  }
+  plot.draw();
 
   return 0;
 }
