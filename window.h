@@ -7,20 +7,13 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
-const size_t winX = 1000;
-const size_t winY = 500;
+#define ZERO_F 0.0f
+#define NINETY_F 90.0f
 const std::string name = "Two-dimensional graph plot";
 
 class Window {
 private:
-  std::unique_ptr<sf::RenderWindow> window;
-  float zoomFactor{1.0f};
-  float zoomIncrement{0.1f};
-  bool moveLeft{false};
-  bool moveRight{false};
-  bool moveUp{false};
-  bool moveDown{false};
-  bool mouseMove{false};
+  sf::RenderWindow &window;
 
   float percentage(float value, float min, float max);
 
@@ -38,16 +31,9 @@ private:
   std::string parseValueToString(float value);
 
 public:
-  void display(const std::vector<std::pair<float, float>> &data,
-               const std::string &fontpath, float minX, float maxX, float minY,
-               float maxY);
   void draw(const std::vector<std::pair<float, float>> &filtered_data,
             const std::string &fontpath, float minX, float maxX, float minY,
             float maxY);
-  Window() {
-    window = std::make_unique<sf::RenderWindow>(
-        sf::VideoMode(winX, winY), std::move(name),
-        sf::Style::Titlebar | sf::Style::Close);
-  }
-  ~Window() { window->close(); }
+  Window(sf::RenderWindow &wd) : window(wd) {}
+  ~Window() { window.close(); }
 };

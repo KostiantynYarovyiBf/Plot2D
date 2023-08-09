@@ -21,7 +21,7 @@ void Window::drawLine(sf::Color color,
   line[1].color = color;
   line[0].position = pos.first;
   line[1].position = pos.second;
-  window->draw(line, 2, sf::Lines);
+  window.draw(line, 2, sf::Lines);
 }
 
 void Window::drawText(const sf::Font &font, std::string &&str, sf::Vector2f &&p,
@@ -33,7 +33,7 @@ void Window::drawText(const sf::Font &font, std::string &&str, sf::Vector2f &&p,
   text.setString(std::move(str));
   text.setPosition(std::move(p));
   text.rotate(rotate);
-  window->draw(text);
+  window.draw(text);
 }
 
 int Window::calculateDegee(float value) {
@@ -51,7 +51,6 @@ int Window::calculateDegee(float value) {
 
   return degree;
 }
-
 std::string Window::parseValueToString(float value) {
   int degree = calculateDegee(value);
   double scale = pow(10, degree);
@@ -59,103 +58,34 @@ std::string Window::parseValueToString(float value) {
                    std::to_string(degree) + ")");
 }
 
-void Window::display(const std::vector<std::pair<float, float>> &data,
-                     const std::string &fontpath, float minX, float maxX,
-                     float minY, float maxY) {
-  sf::View view(window->getDefaultView());
-
-  while (window->isOpen()) {
-    sf::Event event;
-    while (window->pollEvent(event)) {
-      if (event.type == sf::Event::Closed) {
-        window->close();
-      }
-      if (event.type == sf::Event::MouseWheelScrolled) {
-        if (event.mouseWheelScroll.delta > 0) {
-          // Zoom in
-          zoomFactor -= zoomIncrement;
-        } else if (event.mouseWheelScroll.delta < 0) {
-          // Zoom out
-          zoomFactor += zoomIncrement;
-        }
-        zoomFactor = std::max(0.1f, zoomFactor);
-      }
-      if (event.type == sf::Event::KeyPressed) {
-        if (event.key.code == sf::Keyboard::Left) {
-          moveLeft = true;
-        } else if (event.key.code == sf::Keyboard::Right) {
-          moveRight = true;
-        }
-        if (event.key.code == sf::Keyboard::Up) {
-          moveUp = true;
-        } else if (event.key.code == sf::Keyboard::Down) {
-          moveDown = true;
-        }
-      }
-
-      if (event.type == sf::Event::KeyReleased) {
-        if (event.key.code == sf::Keyboard::Left) {
-          moveLeft = false;
-        } else if (event.key.code == sf::Keyboard::Right) {
-          moveRight = false;
-        }
-        if (event.key.code == sf::Keyboard::Up) {
-          moveUp = false;
-        } else if (event.key.code == sf::Keyboard::Down) {
-          moveDown = false;
-        }
-      }
-    }
-
-    if (moveLeft) {
-      view.move(-5.0f, 0.0f);
-    }
-    if (moveRight) {
-      view.move(5.0f, 0.0f);
-    }
-    if (moveDown) {
-      view.move(0.0f, 5.0f);
-    }
-    if (moveUp) {
-      view.move(0.0f, -5.0f);
-    }
-
-    draw(data, fontpath, minX, maxX, minY, maxY);
-    view.setSize(window->getSize().x / zoomFactor,
-                 window->getSize().y / zoomFactor);
-    window->setView(view);
-    window->display();
-    sf::sleep(sf::milliseconds(10));
-  }
-}
-
 void Window::draw(const std::vector<std::pair<float, float>> &filtered_data,
                   const std::string &fontpath, float minX, float maxX,
                   float minY, float maxY) {
 
   std::vector<sf::Vector2f> mappedPosize_ts;
-  window->clear(sf::Color::White);
-  sf::CircleShape posize_tShape(2.0);
+  float pointRadius = 0.4f;
+  window.clear(sf::Color::White);
+  sf::CircleShape posize_tShape(pointRadius);
   posize_tShape.setFillColor(sf::Color::Green);
-  const float winX = static_cast<float>(window->getSize().x);
-  const float winY = static_cast<float>(window->getSize().y);
+  const float winX = static_cast<float>(window.getSize().x);
+  const float winY = static_cast<float>(window.getSize().y);
 
   float shiftX = (0.10f * winX);
   float shiftY = (0.90f * winY);
 
-  float x = (shiftX + getCoord(winX, 0.0f));
-  float y = (shiftY + getCoord(winY, 0.0f));
+  float x = (shiftX + getCoord(winX, ZERO_F));
+  float y = (shiftY + getCoord(winY, ZERO_F));
 
   // draw marks by Y axis
-  float markY1 = shiftY + getCoord(winY, percentage(0.0f, minY, maxY)) - 10;
-  float markY2 = shiftY + getCoord(winY, percentage(0.0f, minY, maxY)) + 10;
+  float markY1 = shiftY + getCoord(winY, ZERO_F) - 10;
+  float markY2 = shiftY + getCoord(winY, ZERO_F) + 10;
   float markX25 = shiftX + getCoord(winX, 25.0);
   float markX50 = shiftX + getCoord(winX, 50.0);
   float markX75 = shiftX + getCoord(winX, 75.0);
 
   // draw marks by X axis
-  float markX1 = shiftX + getCoord(winX, 0.0f) - 10;
-  float markX2 = shiftX + getCoord(winX, 0.0f) + 10;
+  float markX1 = shiftX + getCoord(winX, ZERO_F) - 10;
+  float markX2 = shiftX + getCoord(winX, ZERO_F) + 10;
   float markY25 = shiftY - getCoord(winY, 25.0);
   float markY50 = shiftY - getCoord(winY, 50.0);
   float markY75 = shiftY - getCoord(winY, 75.0);
@@ -186,8 +116,8 @@ void Window::draw(const std::vector<std::pair<float, float>> &filtered_data,
         (-1) * (percentage(it.second, minY, maxY) * (0.90f * winY)) / 100);
 
     mappedPosize_ts.emplace_back(x0, y0);
-    posize_tShape.setPosition(x0, y0);
-    window->draw(posize_tShape);
+    posize_tShape.setPosition(x0 - pointRadius, y0 - pointRadius);
+    window.draw(posize_tShape);
   }
 
   // Window axises
@@ -198,14 +128,15 @@ void Window::draw(const std::vector<std::pair<float, float>> &filtered_data,
   // Window text
   sf::Font font;
   if (font.loadFromFile(fontpath)) {
-    const float rotate0 = 0.0f;
-    const float rotate90 = 90.0f;
+    const float rotate0 = ZERO_F;
+    const float rotate90 = NINETY_F;
 
     drawText(font, "Meter",
              sf::Vector2f((winX) - (shiftX), (winY - (0.1f * winY))), rotate0);
     drawText(font, "Newton", sf::Vector2f(sf::Vector2f((shiftX - 20), (20))),
              rotate90);
-    for (int i = 0; i < 100; i += 25) {
+
+    for (int i = 25; i < 100; i += 25) {
       drawText(font,
                parseValueToString(getValue(static_cast<float>(i), minX, maxX)),
                sf::Vector2f(shiftX + getCoord(winX, static_cast<float>(i)),
